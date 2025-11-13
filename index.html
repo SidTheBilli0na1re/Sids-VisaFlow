@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sid's VisaFlow</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: white;
+      color: black;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid black;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .nav-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: black;
+      transition: opacity 0.2s;
+    }
+
+    .nav-title:hover {
+      opacity: 0.7;
+    }
+
+    .nav-back {
+      font-size: 0.875rem;
+      color: #666;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color 0.2s;
+      display: none;
+    }
+
+    .nav-back:hover {
+      color: black;
+    }
+
+    .nav-back.visible {
+      display: block;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 2rem;
+    }
+
+    .dashboard-title {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-title h2 {
+      font-size: 1.875rem;
+      font-weight: 600;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .card-button {
+      background: white;
+      border: 2px solid black;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: black;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .card-button:hover {
+      background: black;
+      color: white;
+    }
+
+    .card-button h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-button p {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .card-button:hover p {
+      color: #ccc;
+    }
+
+    /* Scanner View */
+    .scanner-view {
+      max-width: 700px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 2rem;
+    }
+
+    .tab-button {
+      padding-bottom: 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #666;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-button:hover {
+      color: black;
+    }
+
+    .tab-button.active {
+      color: black;
+      border-bottom-color: black;
+    }
+
+    /* Upload Area */
+    .upload-area {
+      background: white;
+      border: 2px dashed #999;
+      border-radius: 0.5rem;
+      padding: 3rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 2rem;
+    }
+
+    .upload-area:hover {
+      border-color: black;
+    }
+
+    .upload-area.loading {
+      border-color: black;
+    }
+
+    .upload-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .upload-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .upload-text {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: black;
+    }
+
+    .upload-subtext {
+      font-size: 0.875rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .upload-preview {
+      max-height: 16rem;
+      border-radius: 0.5rem;
+      object-fit: cover;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 9999px;
+      height: 0.5rem;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: black;
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.2s;
+    }
+
+    .progress-text {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .result-box {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .result-box.success {
+      border-color: black;
+    }
+
+    .result-header {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .result-title {
+      font-weight: 600;
+      color: black;
+    }
+
+    .result-desc {
+      font-size: 0.875rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+    }
+
+    .tag.found {
+      background: black;
+      color: white;
+    }
+
+    .tag.missing {
+      background: #f0f0f0;
+      color: black;
+      border: 1px solid #ccc;
+    }
+
+    /* Tracker View */
+    .tracker-view {
+      max-width: 600px;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: black;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .form-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 2px solid black;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      color: black;
+      font-family: inherit;
+    }
+
+    .form-input::placeholder {
+      color: #999;
+    }
+
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-display {
+      background: white;
+      border: 2px solid black;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      space-y: 1rem;
+    }
+
+    .status-row {
+      margin-bottom: 1.5rem;
+    }
+
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .status-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .status-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: black;
+    }
+
+    .status-details {
+      padding-top: 1rem;
+      border-top: 1px solid #ddd;
+    }
+
+    .status-details-text {
+      font-size: 0.875rem;
+      color: black;
+      margin-top: 0.25rem;
+    }
+
+    .status-updated {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 1rem;
+    }
+
+    /* Notification Setup */
+    .notification-box {
+      background: white;
+      border: 2px solid black;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      space-y: 1rem;
+      margin-top: 2rem;
+    }
+
+    .notification-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .notification-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .notification-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: black;
+    }
+
+    .notification-desc {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .subscription-form {
+      space-y: 0.75rem;
+    }
+
+    .subscription-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid black;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: black;
+      font-family: inherit;
+      margin-bottom: 0.75rem;
+    }
+
+    .subscription-input::placeholder {
+      color: #999;
+    }
+
+    .subscription-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .subscription-btn {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .success-msg {
+      font-size: 0.75rem;
+      color: black;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    .history-view {
+      max-width: 900px;
+    }
+
+    .history-item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .history-filename {
+      font-weight: 600;
+      color: black;
+    }
+
+    .history-time {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .history-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #999;
+      font-size: 1.25rem;
+      transition: color 0.2s;
+    }
+
+    .history-delete:hover {
+      color: black;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: black;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        flex-wrap: wrap;
+      }
+
+      nav {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <button class="nav-title" onclick="showDashboard()">Sid's VisaFlow</button>
+      <button class="nav-back" id="backBtn" onclick="showDashboard()">Back to Menu</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Dashboard View -->
+    <div id="dashboard" class="view active">
+      <div class="dashboard">
+        <div class="dashboard-title">
+          <h2>Choose a service</h2>
+        </div>
+        <div class="dashboard-grid">
+          <button class="card-button" onclick="showScanner()">
+            <h3>Scan Documents</h3>
+            <p>Upload and extract text from visa documents with OCR</p>
+          </button>
+          <button class="card-button" onclick="showTracker()">
+            <h3>Track Application</h3>
+            <p>Check your visa application status using your reference number</p>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scanner View -->
+    <div id="scanner" class="view scanner-view">
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('scanner')">Scanner</button>
+        <button class="tab-button" onclick="switchTab('history')" id="historyTab">History (0)</button>
+      </div>
+
+      <div id="scannerTab" class="tab-content">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-content" id="uploadContent">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <div class="upload-text">Upload document image</div>
+            <div class="upload-subtext">PNG, JPG, or PDF (max 10MB)</div>
+          </div>
+          <img id="preview" class="upload-preview" style="display: none;">
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+        <div id="result" style="display: none;"></div>
+      </div>
+
+      <div id="historyTab" class="tab-content" style="display: none;">
+        <div id="historyList"></div>
+        <p id="emptyHistory" style="color: #999; text-align: center;">No scans yet</p>
+      </div>
+    </div>
+
+    <!-- Tracker View -->
+    <div id="tracker" class="view tracker-view">
+      <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: black;">Check Application Status</h2>
+
+      <form onsubmit="handleCheckStatus(event)" class="form-group">
+        <label class="form-label">Application Reference Number</label>
+        <div class="form-row">
+          <input type="text" id="refNum" class="form-input" placeholder="e.g., VIS-2024-123456" required>
+          <button type="submit" class="btn" id="checkBtn">
+            <svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Check
+          </button>
+        </div>
+      </form>
+
+      <div id="statusResult" style="display: none;"></div>
+
+      <div id="notificationSetup" style="display: none;">
+        <div class="notification-box">
+          <div class="notification-header">
+            <svg class="notification-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            <h3 class="notification-title">Get Status Updates</h3>
+          </div>
+          <p class="notification-desc">We'll periodically check the government database and notify you of any status changes via your preferred method.</p>
+          <form onsubmit="handleSubscribe(event)" class="subscription-form">
+            <input type="email" id="email" class="subscription-input" placeholder="your@email.com" required>
+            <input type="tel" id="phone" class="subscription-input" placeholder="+1 (555) 123-4567" optional>
+            <button type="submit" class="btn subscription-btn">Subscribe to Updates</button>
+          </form>
+          <p id="subscribeMsg" class="success-msg" style="display: none;">Subscribed! You'll receive updates when status changes.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.0/dist/tesseract.min.js"></script>
+  <script>
+    const VISA_REQUIREMENTS = [
+      "Passport", "Visa Application Form", "Travel Dates", "Flight Tickets",
+      "Hotel Booking", "Travel Insurance", "Bank Statement", "Employment Letter", "Visa Fee Receipt"
+    ];
+
+    let scans = [];
+    let currentStatus = null;
+
+    function loadScans() {
+      const saved = localStorage.getItem("visa-scans");
+      scans = saved ? JSON.parse(saved) : [];
+      updateHistoryTab();
+    }
+
+    function saveScans() {
+      localStorage.setItem("visa-scans", JSON.stringify(scans));
+      updateHistoryTab();
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById(viewId).classList.add("active");
+      document.getElementById("backBtn").classList.toggle("visible", viewId !== "dashboard");
+    }
+
+    function showDashboard() { showView("dashboard"); }
+    function showScanner() { showView("scanner"); loadScans(); }
+    function showTracker() { showView("tracker"); }
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+      event.target.classList.add("active");
+      document.getElementById(tab + "Tab").style.display = "block";
+      if (tab === "history") loadScans();
+    }
+
+    async function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const uploadContent = document.getElementById("uploadContent");
+      const preview = document.getElementById("preview");
+      const result = document.getElementById("result");
+
+      // Show loading
+      uploadContent.innerHTML = '<div class="loader"></div><p>Scanning document...</p>';
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        preview.src = evt.target.result;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+
+      try {
+        const { data } = await Tesseract.recognize(file, "eng");
+        const text = data.text.toUpperCase();
+        const found = VISA_REQUIREMENTS.filter(r => text.includes(r.toUpperCase()));
+        const missing = VISA_REQUIREMENTS.filter(r => !found.includes(r));
+
+        const scan = {
+          id: Date.now().toString(),
+          timestamp: new Date().toLocaleString(),
+          fileName: file.name,
+          extractedText: data.text,
+          foundRequirements: found,
+          missingRequirements: missing,
+          confidence: data.confidence
+        };
+
+        scans.unshift(scan);
+        saveScans();
+
+        // Show result
+        result.innerHTML = `
+          <div class="result-box success">
+            <div class="result-header">
+              <svg class="result-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <div>
+                <div class="result-title">Scan Complete</div>
+                <div class="result-desc">${found.length} of ${VISA_REQUIREMENTS.length} documents detected</div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (found.length > 0) {
+          result.innerHTML += `
+            <div class="result-box">
+              <h4 style="font-weight: 600; margin-bottom: 0.75rem; color: black;">Found Documents</h4>
+              <div class="tags">${found.map(r => `<span class="tag found">${r}</span>`).join("")}</div>
+            </div>
+          `;
+        }
+
+        if (missing.length > 0) {
+          result.innerHTML += `
+            <div class="result-box">
+              <h4 style="font-weight: 600; margin-bottom: 0.75rem; color: black;">Missing Documents</h4>
+              <div class="tags">${missing.map(r => `<span class="tag missing">${r}</span>`).join("")}</div>
+            </div>
+          `;
+        }
+
+        result.innerHTML += `<p style="font-size: 0.75rem; color: #666; text-align: center; margin-top: 1rem;">OCR Confidence: ${data.confidence.toFixed(1)}%</p>`;
+        result.style.display = "block";
+
+        setTimeout(() => {
+          uploadContent.innerHTML = `
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <div class="upload-text">Upload document image</div>
+            <div class="upload-subtext">PNG, JPG, or PDF (max 10MB)</div>
+          `;
+          preview.style.display = "none";
+          result.style.display = "none";
+        }, 3000);
+      } catch (err) {
+        console.error("OCR Error:", err);
+        uploadContent.innerHTML = '<div style="color: red;">Error scanning document. Please try again.</div>';
+      }
+    }
+
+    function updateHistoryTab() {
+      const historyList = document.getElementById("historyList");
+      const emptyHistory = document.getElementById("emptyHistory");
+      document.getElementById("historyTab").textContent = `History (${scans.length})`;
+
+      if (scans.length === 0) {
+        historyList.innerHTML = "";
+        emptyHistory.style.display = "block";
+      } else {
+        emptyHistory.style.display = "none";
+        historyList.innerHTML = scans.map(s => `
+          <div class="history-item">
+            <div class="history-header">
+              <div>
+                <div class="history-filename">${s.fileName}</div>
+                <div class="history-time">${s.timestamp}</div>
+              </div>
+              <button class="history-delete" onclick="deleteScan('${s.id}')">×</button>
+            </div>
+            <div class="tags">
+              ${s.foundRequirements.map(r => `<span class="tag found">${r}</span>`).join("")}
+              ${s.missingRequirements.slice(0, 3).map(r => `<span class="tag missing">${r}</span>`).join("")}
+              ${s.missingRequirements.length > 3 ? `<span class="tag missing">+${s.missingRequirements.length - 3} more</span>` : ""}
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    function deleteScan(id) {
+      scans = scans.filter(s => s.id !== id);
+      saveScans();
+    }
+
+    async function handleCheckStatus(e) {
+      e.preventDefault();
+      const refNum = document.getElementById("refNum").value;
+      const checkBtn = document.getElementById("checkBtn");
+      const statusResult = document.getElementById("statusResult");
+      const notificationSetup = document.getElementById("notificationSetup");
+
+      checkBtn.disabled = true;
+      checkBtn.innerHTML = '<div class="loader"></div>';
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const mockStatuses = ["Received", "In Process", "Under Review", "Approved", "Rejected"];
+      const status = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
+
+      currentStatus = {
+        referenceNumber: refNum,
+        status: status,
+        lastUpdated: new Date().toLocaleString(),
+        details: `Your application is currently ${status.toLowerCase()}. You will receive an email notification when there are any updates.`
+      };
+
+      statusResult.innerHTML = `
+        <div class="status-display">
+          <div class="status-row">
+            <div class="status-label">Status</div>
+            <div class="status-value">${currentStatus.status}</div>
+          </div>
+          <div class="status-row status-details">
+            <div class="status-label">Details</div>
+            <div class="status-details-text">${currentStatus.details}</div>
+          </div>
+          <div class="status-updated">Last updated: ${currentStatus.lastUpdated}</div>
+        </div>
+      `;
+
+      statusResult.style.display = "block";
+      notificationSetup.style.display = "block";
+
+      checkBtn.disabled = false;
+      checkBtn.innerHTML = '<svg style="width: 1rem; height: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>Check';
+    }
+
+    function handleSubscribe(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const subscribeMsg = document.getElementById("subscribeMsg");
+
+      if (email || phone) {
+        localStorage.setItem("visa-notification", JSON.stringify({
+          referenceNumber: currentStatus.referenceNumber,
+          email,
+          phone,
+          subscribedAt: new Date().toISOString()
+        }));
+
+        subscribeMsg.style.display = "block";
+        setTimeout(() => {
+          subscribeMsg.style.display = "none";
+          document.getElementById("email").value = "";
+          document.getElementById("phone").value = "";
+        }, 3000);
+      }
+    }
+
+    loadScans();
+  </script>
+</body>
+</html>
